@@ -1,0 +1,3 @@
+[2026-02-19T21:54:16.773701] started: Task: Implement definition formatter
+[2026-02-19T21:54:29.991895] done: ```json
+{"files": [{"path": "src/formatter.py", "content": "\"\"\"Definition formatter module.\"\"\"\n\n\ndef format_definition(data):\n    \"\"\"Format dictionary API response into a readable string.\n    \n    Args:\n        data: JSON response from Free Dictionary API.\n        \n    Returns:\n        Formatted string with word, phonetic, part of speech, and definition.\n    \"\"\"\n    if not data or not isinstance(data, list) or len(data) == 0:\n        return \"No definition found.\"\n    

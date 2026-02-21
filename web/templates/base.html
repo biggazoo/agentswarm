@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Garrison | AgentSwarm</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+  <script>tailwind.config = { darkMode: 'class' }</script>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen">
+  <nav class="bg-gray-900 border-b border-gray-800 px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+    <div class="flex items-center gap-2">
+      <span class="text-2xl">🐝</span>
+      <span class="font-bold text-lg text-white">Garrison</span>
+      <span class="text-gray-500 text-sm hidden sm:inline">AgentSwarm Lite</span>
+    </div>
+    <div class="flex gap-3 text-sm">
+      <a href="/" class="text-gray-300 hover:text-white transition-colors">Dashboard</a>
+      <a href="/run" class="text-gray-300 hover:text-white transition-colors">New Run</a>
+      <a href="/logs" class="text-gray-300 hover:text-white transition-colors">Logs</a>
+      <a href="/files" class="text-gray-300 hover:text-white transition-colors">Files</a>
+      <a href="/logout" class="text-red-400 hover:text-red-300 transition-colors">Logout</a>
+    </div>
+  </nav>
+  <main class="p-4 max-w-6xl mx-auto">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

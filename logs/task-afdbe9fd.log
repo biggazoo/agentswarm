@@ -1,0 +1,7 @@
+[2026-02-19T21:54:29.365627] started: Task: Create README.md documentation
+[2026-02-19T21:54:43.622145] done: ```json
+{
+  "files": [
+    {
+      "path": "README.md",
+      "content": "# Word Definition CLI\n\nA Python command-line tool that retrieves word definitions using the Free Dictionary API.\n\n## Description\n\nWord Definition CLI is a simple and elegant command-line tool that allows users to quickly look up word definitions without leaving their terminal. It connects to the Free Dictionary API to fetch accurate definitions, phonetics, and part of speech information.\n\n## Features\n\n- Quick wor

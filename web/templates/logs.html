@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mt-4">
+  <h1 class="text-xl font-bold text-white mb-4">📋 Logs</h1>
+  <div class="flex gap-4 flex-col md:flex-row">
+
+    <!-- FILE LIST -->
+    <div class="w-full md:w-56 shrink-0">
+      <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-800 text-xs text-gray-500 uppercase">Log Files</div>
+        {% if log_files %}
+          {% for f in log_files %}
+          <a href="/logs/{{ f }}"
+            class="block px-4 py-2 text-sm border-b border-gray-800/50 hover:bg-gray-800/50 transition-colors
+                   {% if active_file == f %}text-blue-400 bg-gray-800/50{% else %}text-gray-300{% endif %}">
+            {{ f }}
+          </a>
+          {% endfor %}
+        {% else %}
+          <div class="px-4 py-6 text-gray-600 text-sm text-center">No logs yet.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- LOG CONTENT -->
+    <div class="flex-1 min-w-0">
+      <div class="bg-gray-900 rounded-xl border border-gray-800">
+        <div class="px-4 py-3 border-b border-gray-800 text-xs text-gray-500 uppercase">
+          {{ active_file or "Select a log file" }}
+        </div>
+        {% if log_content %}
+        <pre class="p-4 text-xs text-gray-300 font-mono overflow-x-auto whitespace-pre-wrap break-words max-h-[70vh] overflow-y-auto">{{ log_content }}</pre>
+        {% else %}
+        <div class="px-4 py-12 text-center text-gray-600 text-sm">Select a log file to view it.</div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,7 @@
+[2026-02-19T22:12:25.295880] started: Task: Handle network errors
+[2026-02-19T22:12:38.959975] done: ```json
+{
+  "files": [
+    {"path": "cli_dict/__init__.py", "content": "# CLI Dictionary Package\n"},
+    {"path": "cli_dict/src/__init__.py", "content": "# CLI Dictionary Source Package\n"},
+    {"path": "cli_dict/src/api_client.py", "content": "\"\"\"API client for Free Dictionary API.\"\"\"\n\nimport requests\n\n\nclass NetworkError(Exception):\n    \"\"\"Custom exception for network-related errors.\"\"\"\n    pass\n\n\nclass WordNotFoundError(Exception):\n    \"\"\"Custom exception when a wo

@@ -1,0 +1,20 @@
+<div class="divide-y divide-gray-800/50">
+{% for entry in agents %}
+<div class="px-4 py-2 flex items-start gap-3 text-sm">
+  <span class="text-gray-600 font-mono text-xs pt-0.5 shrink-0">{{ entry.timestamp[:16] }}</span>
+  <span class="shrink-0">
+    {% if entry.event == 'started' %}🟡
+    {% elif entry.event == 'commit' %}🟢
+    {% elif entry.event == 'error' %}🔴
+    {% elif entry.event == 'done' %}✅
+    {% else %}⚪{% endif %}
+  </span>
+  <span class="text-gray-300 min-w-0 break-words">{{ entry.message }}</span>
+  {% if entry.tokens_used %}
+  <span class="text-gray-600 text-xs ml-auto shrink-0">{{ entry.tokens_used }} tok</span>
+  {% endif %}
+</div>
+{% else %}
+<div class="px-4 py-8 text-center text-gray-600 text-sm">No agent activity yet.</div>
+{% endfor %}
+</div>

@@ -1,0 +1,7 @@
+[2026-02-19T22:30:52.361317] started: Task: Write SPEC.md specification
+[2026-02-19T22:31:06.375173] done: ```json
+{
+  "files": [
+    {
+      "path": "SPEC.md",
+      "content": "# Dictionary CLI Tool Specification\n\n## Project Overview\n\nA Python CLI tool that retrieves word definitions from the Free Dictionary API. Users provide a word as a command-line argument, and the tool returns the definition, part of speech, and phonetic pronunciation in a formatted output.\n\n## Features\n\n### 1. Word Lookup\n- Accept a word as a command-line argument\n- Query the Free Dictionary API: `https://api.dictio

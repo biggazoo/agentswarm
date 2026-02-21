@@ -1,0 +1,7 @@
+[2026-02-19T22:09:07.582918] started: Task: Create README
+[2026-02-19T22:09:26.032775] done: ```json
+{
+  "files": [
+    {
+      "path": "README.md",
+      "content": "# CLI Dictionary\n\nA Python CLI tool that fetches word definitions using the Free Dictionary API.\n\n## Features\n\n- Look up word definitions from the command line\n- Displays part of speech and example usage\n- Supports verbose and formatted output modes\n- Handles errors gracefully (word not found, network errors, invalid input)\n\n## Installation\n\n1. Clone the repository:\n\n```bash\ngit clone <repository-url>\ncd <

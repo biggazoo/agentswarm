@@ -1,0 +1,3 @@
+[2026-02-19T22:06:02.572158] started: Task: Create output formatter
+[2026-02-19T22:06:15.716820] done: ```json
+{"files": [{"path": "cli/formatter.py", "content": "\"\"\"CLI output formatter for dictionary definitions.\"\"\"\n\n\ndef format_definition(data: dict) -> str:\n    \"\"\"Format dictionary definition data into a readable string.\n    \n    Args:\n        data: Dictionary containing word data with keys:\n            - word: The word itself\n            - phonetic: Phonetic pronunciation\n            - part_of_speech: Part of speech (noun, verb, etc.)\n            - definition: The word de

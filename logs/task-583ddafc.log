@@ -1,0 +1,2 @@
+[2026-02-21T11:43:14.295926] started: Task: Loadtest task 4
+[2026-02-21T11:43:19.277251] done: created loadtest_parallel_4.txt with content 'worker load test 4'

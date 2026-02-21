@@ -1,0 +1,33 @@
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-gray-500 text-xs uppercase border-b border-gray-800">
+      <th class="px-4 py-2 text-left">Status</th>
+      <th class="px-4 py-2 text-left">Task</th>
+      <th class="px-4 py-2 text-left hidden sm:table-cell">Priority</th>
+      <th class="px-4 py-2 text-left hidden md:table-cell">Branch</th>
+      <th class="px-4 py-2 text-left hidden sm:table-cell">Retries</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for task in tasks %}
+  <tr class="border-b border-gray-800/50 hover:bg-gray-800/30">
+    <td class="px-4 py-2 whitespace-nowrap">
+      {% if task.status == 'done' %}<span class="text-green-400">✅ done</span>
+      {% elif task.status == 'running' %}<span class="text-blue-400">⏳ running</span>
+      {% elif task.status == 'pending' %}<span class="text-yellow-400">📋 pending</span>
+      {% elif task.status == 'failed' %}<span class="text-red-400">❌ failed</span>
+      {% elif task.status == 'fix_needed' %}<span class="text-orange-400">🔧 fix</span>
+      {% endif %}
+    </td>
+    <td class="px-4 py-2 text-gray-200">{{ task.title }}</td>
+    <td class="px-4 py-2 text-gray-400 hidden sm:table-cell">{{ task.priority }}</td>
+    <td class="px-4 py-2 text-gray-500 font-mono text-xs hidden md:table-cell">{{ task.branch_name or '-' }}</td>
+    <td class="px-4 py-2 text-gray-500 hidden sm:table-cell">{{ task.retries }}</td>
+  </tr>
+  {% else %}
+  <tr>
+    <td colspan="5" class="px-4 py-8 text-center text-gray-600">No tasks yet. Start a new run.</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>

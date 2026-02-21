@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-2xl mx-auto mt-8">
+  <h1 class="text-2xl font-bold text-white mb-2">🚀 New Swarm Run</h1>
+  <p class="text-gray-400 text-sm mb-6">Describe what you want built. Be specific — the planner will break it into tasks automatically.</p>
+
+  {% if error %}
+  <div class="bg-red-900/30 border border-red-800 text-red-300 rounded-xl px-4 py-3 mb-4 text-sm">
+    ⚠️ {{ error }}
+  </div>
+  {% endif %}
+
+  <form method="post" action="/run">
+    <textarea name="spec"
+      rows="6"
+      placeholder="Build a FastAPI REST API with user authentication using JWT tokens, SQLite database, full CRUD endpoints for a todo list, password hashing, and a /docs Swagger UI..."
+      class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 placeholder-gray-600 focus:outline-none focus:border-blue-500 resize-none text-sm"
+      required></textarea>
+    <div class="mt-2 text-xs text-gray-600 mb-4">
+      💡 Tip: Include tech stack, features, file structure, and any constraints.
+    </div>
+    <button type="submit"
+      class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors">
+      🐝 Launch Swarm
+    </button>
+  </form>
+</div>
+{% endblock %}
