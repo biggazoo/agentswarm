@@ -225,7 +225,12 @@ class WorkerAgent:
             raise Exception(f"Primary model timeout: {e}")
         except requests.HTTPError as e:
             status = e.response.status_code if e.response is not None else None
-            should_fallback = (status == 429)
+            error_text = str(e).lower()
+            should_fallback = (
+                status == 429
+                or "model_not_found" in error_text
+                or "unknown model" in error_text
+            )
             if should_fallback and self.fallback_on_rate_limit and self.fallback_model:
                 print(f"[{self.worker_id}] Rate limited on {self.primary_model}, falling back to {self.fallback_model}")
                 try:

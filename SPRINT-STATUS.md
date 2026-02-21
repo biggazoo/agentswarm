@@ -23,11 +23,13 @@ All steps 0.1–0.8 done. Reports at /root/.openclaw/workspace/reports/vps-phase
 - Step 3.2 ✅ Cleanup implemented: PID tracking set, SIGTERM/SIGINT handlers, SIGTERM→10s wait→SIGKILL, normal-exit cleanup, completion PID removal + cleanup logs
 - Step 3.3 ✅ Created systemd unit template: /home/gary/agentswarm/agentswarm.service
 - Step 3.4 ✅ Shutdown under load tests passed: SIGTERM runs showed cleanup logs and no lingering main/worker processes
-## Phase 4: Model Configuration — IN PROGRESS
+## Phase 4: Model Configuration — COMPLETE ✅
 - Step 4.1 ✅ Added PRIMARY/FALLBACK model env config + fallback-on-rate-limit toggle
 - Step 4.2 ✅ Worker API calls now try PRIMARY first, fallback on 429/timeout, and fail task only if both fail
 - Step 4.3 ✅ Added PRIMARY/FALLBACK + key/config vars to .env.example
 - Step 4.4 ✅ Provider routing added: openai-codex/* via OpenAI API, minimax/* via MiniMax API
+- Step 4.5 ✅ Validation matrix run (primary success, forced fallback success, both-fail clean failure)
+- Step 4.6 ✅ Hardcoded model-string audit run; no non-config hardcoded model selections remain
 ## Phase 5: Strip Secrets — NOT STARTED
 ## Phase 6: Documentation — NOT STARTED
 ## Phase 7: Final Verification — NOT STARTED

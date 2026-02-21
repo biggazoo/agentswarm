@@ -263,17 +263,29 @@ class TaskQueue:
         conn.close()
     
     def fail_task(self, task_id: str, error: str):
-        """Mark task as failed, increment retries"""
+        """Mark task retry/failure with retry ceiling."""
         conn = self._get_conn()
         cursor = conn.cursor()
-        
-        cursor.execute('''
-            UPDATE tasks
-            SET status = 'pending', error = ?, retries = retries + 1,
-                started_at = NULL
-            WHERE task_id = ?
-        ''', (error, task_id))
-        
+
+        cursor.execute('SELECT retries FROM tasks WHERE task_id = ?', (task_id,))
+        row = cursor.fetchone()
+        current_retries = row[0] if row else 0
+
+        if current_retries + 1 >= config.MAX_RETRIES:
+            cursor.execute('''
+                UPDATE tasks
+                SET status = 'failed', error = ?, retries = retries + 1,
+                    started_at = NULL, completed_at = CURRENT_TIMESTAMP
+                WHERE task_id = ?
+            ''', (error, task_id))
+        else:
+            cursor.execute('''
+                UPDATE tasks
+                SET status = 'pending', error = ?, retries = retries + 1,
+                    started_at = NULL
+                WHERE task_id = ?
+            ''', (error, task_id))
+
         conn.commit()
         conn.close()
     
