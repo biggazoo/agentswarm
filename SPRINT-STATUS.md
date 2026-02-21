@@ -28,8 +28,8 @@ All steps 0.1–0.8 done. Reports at /root/.openclaw/workspace/reports/vps-phase
 - Step 4.2 ✅ Worker API calls now try PRIMARY first, fallback on 429/timeout, and fail task only if both fail
 - Step 4.3 ✅ Added PRIMARY/FALLBACK + key/config vars to .env.example
 - Step 4.4 ✅ Provider routing added: openai-codex/* via OpenAI API, minimax/* via MiniMax API
-- Step 4.5 ✅ Validation matrix run (primary success, forced fallback success, both-fail clean failure)
-- Step 4.6 ✅ Hardcoded model-string audit run; no non-config hardcoded model selections remain
+- Step 4.5 ✅ Validation matrix re-run complete: test1 fallback-success (primary unavailable), test2 forced fallback success, test3 both-fail clean failure
+- Step 4.6 ✅ Hardcoded model-string audit re-run; no hardcoded model selections outside config-driven routing
 ## Phase 5: Strip Secrets — NOT STARTED
 ## Phase 6: Documentation — NOT STARTED
 ## Phase 7: Final Verification — NOT STARTED
