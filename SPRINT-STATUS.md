@@ -16,6 +16,7 @@ All steps 0.1–0.8 done. Reports at /root/.openclaw/workspace/reports/vps-phase
 - Step 2.3 ✅ WORKER_MEMORY_LIMIT_MB + WORKER_TIMEOUT_SECONDS added
 - Step 2.4 ✅ Resource gate before spawn (<1GB free or load >3.0 skips spawn)
 - Step 2.5 ✅ API_RATE_LIMIT_RPM present in config (default 20)
+- Step 2.6 ⚠️ Load test run #1 executed; criteria mismatch (planner generated 16 tasks, manifest tasks_done=16, not 15)
 ## Phase 3: Orphaned Processes — NOT STARTED
 ## Phase 4: Model Configuration — NOT STARTED
 ## Phase 5: Strip Secrets — NOT STARTED
