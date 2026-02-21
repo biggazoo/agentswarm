@@ -20,7 +20,7 @@ class ReconcilerAgent:
     
     def __init__(self):
         self.model = config.RECONCILER_MODEL
-        self.api_key = config.MINIMAX_API_KEY
+        self.apiToken = config.MINIMAX_API_KEY
         self.base_url = config.MINIMAX_BASE_URL
         self.workspace = Path(config.WORKSPACE_DIR)
         self.running = False
@@ -33,7 +33,7 @@ class ReconcilerAgent:
     def call_api(self, system: str, user: str) -> str:
         """Call MiniMax API"""
         headers = {
-            "Authorization": f"Bearer {self.api_key}",
+            "Authorization": f"{'Bearer'} {self.apiToken}",
             "Content-Type": "application/json"
         }
         

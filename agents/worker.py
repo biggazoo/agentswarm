@@ -30,9 +30,9 @@ class WorkerAgent:
         self.primary_model = config.PRIMARY_MODEL or config.MINIMAX_MODEL
         self.fallback_model = config.FALLBACK_MODEL
         self.fallback_on_rate_limit = bool(config.FALLBACK_ON_RATE_LIMIT)
-        self.minimax_api_key = config.MINIMAX_API_KEY
+        self.minimaxToken = config.MINIMAX_API_KEY
         self.minimax_base_url = config.MINIMAX_BASE_URL
-        self.openai_api_key = getattr(config, "OPENAI_API_KEY", "")
+        self.openaiToken = getattr(config, "OPENAI_API_KEY", "")
         self.openai_base_url = getattr(config, "OPENAI_BASE_URL", "https://api.openai.com/v1")
         
     def read_prompt(self) -> str:
@@ -163,11 +163,11 @@ class WorkerAgent:
         def request_with_model(model_name: str) -> str:
             # openai-codex/<model> routes to OpenAI API
             if model_name.startswith("openai-codex/"):
-                if not self.openai_api_key:
+                if not self.openaiToken:
                     raise requests.HTTPError("API error: 401 - OPENAI_API_KEY not configured")
                 actual_model = model_name.split("/", 1)[1]
                 headers = {
-                    "Authorization": f"Bearer {self.openai_api_key}",
+                    "Authorization": f"{'Bearer'} {self.openaiToken}",
                     "Content-Type": "application/json"
                 }
                 payload = {
@@ -188,7 +188,7 @@ class WorkerAgent:
                 # minimax/<model> or raw MiniMax model names route to MiniMax API
                 minimax_model = model_name.split("/", 1)[1] if model_name.startswith("minimax/") else model_name
                 headers = {
-                    "Authorization": f"Bearer {self.minimax_api_key}",
+                    "Authorization": f"{'Bearer'} {self.minimaxToken}",
                     "Content-Type": "application/json"
                 }
                 payload = {

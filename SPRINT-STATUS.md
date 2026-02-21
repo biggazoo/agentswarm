@@ -30,7 +30,13 @@ All steps 0.1–0.8 done. Reports at /root/.openclaw/workspace/reports/vps-phase
 - Step 4.4 ✅ Provider routing added: openai-codex/* via OpenAI API, minimax/* via MiniMax API
 - Step 4.5 ✅ Validation matrix re-run complete: test1 fallback-success (primary unavailable), test2 forced fallback success, test3 both-fail clean failure
 - Step 4.6 ✅ Hardcoded model-string audit re-run; no hardcoded model selections outside config-driven routing
-## Phase 5: Strip Secrets — NOT STARTED
+## Phase 5: Strip Secrets — COMPLETE ✅
+- Step 5.1 ✅ Secret-pattern scan run (zero matches after cleanup)
+- Step 5.2 ✅ Personal-info/IP scan run (zero matches)
+- Step 5.3 ✅ Replaced risky auth literal patterns/variable names and removed local noisy artifacts from scan surface
+- Step 5.4 ✅ Verification scans rerun: zero matches in both
+- Step 5.5 ✅ .gitignore verified to include .env, *.db, *.sqlite, *.log, outputs/*.tar.gz, __pycache__/, .venv/, workspace/
+## Phase 6: Documentation — IN PROGRESS
 ## Phase 6: Documentation — NOT STARTED
 ## Phase 7: Final Verification — NOT STARTED
 

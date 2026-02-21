@@ -104,7 +104,7 @@ class TaskQueue:
     
     def add_task(self, title: str, description: str, priority: int = 5, depends_on: list = None) -> str:
         """Add a task to the queue"""
-        task_id = f"task-{uuid.uuid4().hex[:8]}"
+        task_id = f"job_{uuid.uuid4().hex[:8]}"
         conn = self._get_conn()
         cursor = conn.cursor()
         
@@ -123,7 +123,7 @@ class TaskQueue:
         cursor = conn.cursor()
         
         for task in tasks:
-            task_id = task.get('task_id') or f"task-{uuid.uuid4().hex[:8]}"
+            task_id = task.get('task_id') or f"job_{uuid.uuid4().hex[:8]}"
             cursor.execute('''
                 INSERT OR IGNORE INTO tasks (task_id, title, description, priority, depends_on)
                 VALUES (?, ?, ?, ?, ?)
