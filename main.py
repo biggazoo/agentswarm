@@ -61,6 +61,31 @@ def spawn_worker(worker_id: str) -> Process:
     return proc
 
 
+def get_available_memory_mb() -> int:
+    """Return available system memory in MB."""
+    try:
+        with open("/proc/meminfo", "r") as f:
+            for line in f:
+                if line.startswith("MemAvailable:"):
+                    kb = int(line.split()[1])
+                    return kb // 1024
+    except Exception:
+        return 0
+    return 0
+
+
+def can_spawn_workers() -> tuple[bool, str]:
+    """Resource gate for worker spawning."""
+    avail_mb = get_available_memory_mb()
+    load1 = os.getloadavg()[0]
+
+    if avail_mb < config.WORKER_MEMORY_LIMIT_MB:
+        return False, f"low memory ({avail_mb}MB available < {config.WORKER_MEMORY_LIMIT_MB}MB limit)"
+    if load1 > 3.0:
+        return False, f"high load ({load1:.2f} > 3.0)"
+    return True, "ok"
+
+
 def start_dashboard():
     """Start dashboard in background"""
     proc = subprocess.Popen(
@@ -217,6 +242,7 @@ def main():
     
     running_workers = {}
     total_workers_spawned = 0
+    worker_sequence = 1
     start_time = time.time()
     
     try:
@@ -227,15 +253,22 @@ def main():
             if stats['pending'] == 0 and stats['running'] == 0:
                 break
             
-            # Spawn workers if needed
-            slots = config.MAX_WORKERS - len(running_workers)
-            if slots > 0 and stats['pending'] > 0:
-                for i in range(min(slots, stats['pending'])):
-                    worker_id = f"worker-{len(running_workers) + i + 1}"
+            # Spawn workers if needed (only for READY tasks)
+            slots = config.MAX_CONCURRENT_WORKERS - len(running_workers)
+            ready_count = len(queue.get_ready_tasks())
+            can_spawn, reason = can_spawn_workers()
+
+            if slots > 0 and ready_count > 0 and can_spawn:
+                to_spawn = min(slots, ready_count)
+                for _ in range(to_spawn):
+                    worker_id = f"worker-{worker_sequence}"
+                    worker_sequence += 1
                     proc = spawn_worker(worker_id)
                     running_workers[proc.pid] = (worker_id, proc)
                     total_workers_spawned += 1
                     print(f"🚀 Spawned {worker_id}")
+            elif slots > 0 and ready_count > 0 and not can_spawn:
+                print(f"⏸️ Skipping spawn: {reason}")
             
             # Check for finished workers
             finished = []

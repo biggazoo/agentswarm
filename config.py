@@ -18,10 +18,15 @@ PLANNER_MODEL = os.environ.get("PLANNER_MODEL", "MiniMax-M2.5")
 RECONCILER_MODEL = os.environ.get("RECONCILER_MODEL", "MiniMax-M2.5")
 
 # Swarm limits
-MAX_WORKERS = int(os.environ.get("MAX_WORKERS", "15"))
+MAX_CONCURRENT_WORKERS = int(os.environ.get("MAX_CONCURRENT_WORKERS", "10"))
+# Backward compatibility
+MAX_WORKERS = MAX_CONCURRENT_WORKERS
 MAX_TASKS = int(os.environ.get("MAX_TASKS", "100"))
 RECONCILER_INTERVAL = int(os.environ.get("RECONCILER_INTERVAL", "120"))
-WORKER_TIMEOUT = int(os.environ.get("WORKER_TIMEOUT", "300"))
+WORKER_TIMEOUT_SECONDS = int(os.environ.get("WORKER_TIMEOUT_SECONDS", "300"))
+# Backward compatibility
+WORKER_TIMEOUT = WORKER_TIMEOUT_SECONDS
+WORKER_MEMORY_LIMIT_MB = int(os.environ.get("WORKER_MEMORY_LIMIT_MB", "1024"))
 MAX_RETRIES = int(os.environ.get("MAX_RETRIES", "3"))
 API_RATE_LIMIT_RPM = int(os.getenv("API_RATE_LIMIT_RPM", "20"))
 

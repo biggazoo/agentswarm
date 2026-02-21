@@ -81,7 +81,7 @@ class ReconcilerAgent:
         from datetime import datetime, timedelta
         
         stalled = []
-        timeout_secs = config.WORKER_TIMEOUT
+        timeout_secs = config.WORKER_TIMEOUT_SECONDS
         
         conn = sqlite3.connect(config.DB_PATH)
         cursor = conn.cursor()

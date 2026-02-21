@@ -188,37 +188,65 @@ class TaskQueue:
         return ready
     
     def claim_task(self, worker_id: str) -> Optional[dict]:
-        """Atomically claim a task"""
+        """Atomically claim one ready task with a write lock to avoid races."""
         conn = self._get_conn()
         cursor = conn.cursor()
-        
-        # Get a ready task
-        ready_tasks = self.get_ready_tasks()
-        if not ready_tasks:
+
+        try:
+            cursor.execute("BEGIN IMMEDIATE")
+
+            cursor.execute('''
+                SELECT task_id, title, description, priority, depends_on
+                FROM tasks
+                WHERE status = 'pending'
+                ORDER BY priority ASC, created_at ASC
+            ''')
+            pending = cursor.fetchall()
+
+            selected = None
+            for task_id, title, desc, priority, depends_on in pending:
+                deps = json.loads(depends_on) if depends_on else []
+                if deps:
+                    placeholders = ','.join(['?' for _ in deps])
+                    cursor.execute(f'''
+                        SELECT COUNT(*) FROM tasks
+                        WHERE task_id IN ({placeholders}) AND status != 'done'
+                    ''', deps)
+                    pending_deps = cursor.fetchone()[0]
+                    if pending_deps != 0:
+                        continue
+
+                selected = {
+                    'task_id': task_id,
+                    'title': title,
+                    'description': desc,
+                    'priority': priority
+                }
+                break
+
+            if not selected:
+                conn.rollback()
+                return None
+
+            task_id = selected['task_id']
+            branch_name = f"agent-{task_id[:8]}"
+
+            cursor.execute('''
+                UPDATE tasks
+                SET status = 'running', assigned_worker = ?, branch_name = ?,
+                    started_at = CURRENT_TIMESTAMP
+                WHERE task_id = ? AND status = 'pending'
+            ''', (worker_id, branch_name, task_id))
+
+            if cursor.rowcount == 0:
+                conn.rollback()
+                return None
+
+            conn.commit()
+            selected['branch_name'] = branch_name
+            return selected
+        finally:
             conn.close()
-            return None
-        
-        task = ready_tasks[0]
-        task_id = task['task_id']
-        branch_name = f"agent-{task_id[:8]}"
-        
-        # Atomic claim
-        cursor.execute('''
-            UPDATE tasks
-            SET status = 'running', assigned_worker = ?, branch_name = ?,
-                started_at = CURRENT_TIMESTAMP
-            WHERE task_id = ? AND status = 'pending'
-        ''', (worker_id, branch_name, task_id))
-        
-        if cursor.rowcount == 0:
-            conn.close()
-            return None
-        
-        conn.commit()
-        conn.close()
-        
-        task['branch_name'] = branch_name
-        return task
     
     def complete_task(self, task_id: str, result: str, status: str = 'done'):
         """Mark task as complete"""
