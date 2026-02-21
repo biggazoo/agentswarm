@@ -27,9 +27,13 @@ class WorkerAgent:
     def __init__(self, worker_id: str):
         self.worker_id = worker_id
         self.workspace = Path(config.WORKSPACE_DIR)
-        self.model = config.MINIMAX_MODEL
-        self.api_key = config.MINIMAX_API_KEY
-        self.base_url = config.MINIMAX_BASE_URL
+        self.primary_model = config.PRIMARY_MODEL or config.MINIMAX_MODEL
+        self.fallback_model = config.FALLBACK_MODEL
+        self.fallback_on_rate_limit = bool(config.FALLBACK_ON_RATE_LIMIT)
+        self.minimax_api_key = config.MINIMAX_API_KEY
+        self.minimax_base_url = config.MINIMAX_BASE_URL
+        self.openai_api_key = getattr(config, "OPENAI_API_KEY", "")
+        self.openai_base_url = getattr(config, "OPENAI_BASE_URL", "https://api.openai.com/v1")
         
     def read_prompt(self) -> str:
         """Load worker system prompt"""
@@ -151,40 +155,84 @@ class WorkerAgent:
             return
 
     def call_api(self, system: str, user: str) -> str:
-        """Call MiniMax API"""
+        """Call API with primary model and optional fallback on 429/timeout."""
         import re
 
         self._throttle_for_rate_limit()
 
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
+        def request_with_model(model_name: str) -> str:
+            # openai-codex/<model> routes to OpenAI API
+            if model_name.startswith("openai-codex/"):
+                if not self.openai_api_key:
+                    raise requests.HTTPError("API error: 401 - OPENAI_API_KEY not configured")
+                actual_model = model_name.split("/", 1)[1]
+                headers = {
+                    "Authorization": f"Bearer {self.openai_api_key}",
+                    "Content-Type": "application/json"
+                }
+                payload = {
+                    "model": actual_model,
+                    "max_tokens": 4000,
+                    "messages": [
+                        {"role": "system", "content": system},
+                        {"role": "user", "content": user}
+                    ]
+                }
+                response = requests.post(
+                    f"{self.openai_base_url}/chat/completions",
+                    headers=headers,
+                    json=payload,
+                    timeout=300
+                )
+            else:
+                # minimax/<model> or raw MiniMax model names route to MiniMax API
+                minimax_model = model_name.split("/", 1)[1] if model_name.startswith("minimax/") else model_name
+                headers = {
+                    "Authorization": f"Bearer {self.minimax_api_key}",
+                    "Content-Type": "application/json"
+                }
+                payload = {
+                    "model": minimax_model,
+                    "max_tokens": 4000,
+                    "messages": [
+                        {"role": "system", "content": system},
+                        {"role": "user", "content": user}
+                    ]
+                }
+                response = requests.post(
+                    f"{self.minimax_base_url}/chat/completions",
+                    headers=headers,
+                    json=payload,
+                    timeout=300
+                )
 
-        payload = {
-            "model": self.model,
-            "max_tokens": 4000,
-            "messages": [
-                {"role": "system", "content": system},
-                {"role": "user", "content": user}
-            ]
-        }
+            if response.status_code != 200:
+                raise requests.HTTPError(f"API error: {response.status_code} - {response.text}", response=response)
 
-        response = requests.post(
-            f"{self.base_url}/chat/completions",
-            headers=headers,
-            json=payload,
-            timeout=300
-        )
+            data = response.json()
+            content = data["choices"][0]["message"]["content"]
+            return re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL).strip()
 
-        if response.status_code != 200:
-            raise Exception(f"API error: {response.status_code} - {response.text}")
-
-        data = response.json()
-        content = data["choices"][0]["message"]["content"]
-
-        # Strip thinking tags that MiniMax includes
-        return re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL).strip()
+        try:
+            return request_with_model(self.primary_model)
+        except requests.Timeout as e:
+            if self.fallback_on_rate_limit and self.fallback_model:
+                print(f"[{self.worker_id}] Rate limited on {self.primary_model}, falling back to {self.fallback_model}")
+                try:
+                    return request_with_model(self.fallback_model)
+                except Exception as fe:
+                    raise Exception(f"Primary timeout + fallback failed: {fe}")
+            raise Exception(f"Primary model timeout: {e}")
+        except requests.HTTPError as e:
+            status = e.response.status_code if e.response is not None else None
+            should_fallback = (status == 429)
+            if should_fallback and self.fallback_on_rate_limit and self.fallback_model:
+                print(f"[{self.worker_id}] Rate limited on {self.primary_model}, falling back to {self.fallback_model}")
+                try:
+                    return request_with_model(self.fallback_model)
+                except Exception as fe:
+                    raise Exception(f"Primary HTTP {status} + fallback failed: {fe}")
+            raise Exception(str(e))
     
     def syntax_check(self, file_path: Path) -> bool:
         """Check syntax of a file"""
@@ -316,6 +364,9 @@ class WorkerAgent:
                         info.size = len(content)
                         info.mode = 0o644
                         tar.addfile(info, io.BytesIO(content))
+                    else:
+                        err = result.stderr.decode(errors="replace").strip()
+                        print(f"[{self.worker_id}] ⚠️ git show main:{rel_path} failed (rc={result.returncode}): {err}")
 
             print(f"[{self.worker_id}] Worker {self.worker_id} output packaged: {archive_path}")
             return str(archive_path)

@@ -18,12 +18,16 @@ All steps 0.1–0.8 done. Reports at /root/.openclaw/workspace/reports/vps-phase
 - Step 2.5 ✅ API_RATE_LIMIT_RPM present in config (default 20)
 - Step 2.6 ✅ Load test run #1 passed stability criteria (0 failures; planner created 16 tasks incl. verify)
 - Step 2.7 ✅ Stability runs #2 and #3 passed (0 failures, no premature exits)
-## Phase 3: Orphaned Processes — IN PROGRESS
+## Phase 3: Orphaned Processes — COMPLETE ✅
 - Step 3.1 ✅ Process management mapped: multiprocessing.Process workers tracked in main loop by pid->(worker_id,proc)
 - Step 3.2 ✅ Cleanup implemented: PID tracking set, SIGTERM/SIGINT handlers, SIGTERM→10s wait→SIGKILL, normal-exit cleanup, completion PID removal + cleanup logs
 - Step 3.3 ✅ Created systemd unit template: /home/gary/agentswarm/agentswarm.service
-- Step 3.4 🔄 Shutdown under load test started: SIGTERM during 15-task run triggers cleanup logs; no lingering worker/main processes found after exit
-## Phase 4: Model Configuration — NOT STARTED
+- Step 3.4 ✅ Shutdown under load tests passed: SIGTERM runs showed cleanup logs and no lingering main/worker processes
+## Phase 4: Model Configuration — IN PROGRESS
+- Step 4.1 ✅ Added PRIMARY/FALLBACK model env config + fallback-on-rate-limit toggle
+- Step 4.2 ✅ Worker API calls now try PRIMARY first, fallback on 429/timeout, and fail task only if both fail
+- Step 4.3 ✅ Added PRIMARY/FALLBACK + key/config vars to .env.example
+- Step 4.4 ✅ Provider routing added: openai-codex/* via OpenAI API, minimax/* via MiniMax API
 ## Phase 5: Strip Secrets — NOT STARTED
 ## Phase 6: Documentation — NOT STARTED
 ## Phase 7: Final Verification — NOT STARTED

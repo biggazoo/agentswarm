@@ -6,12 +6,19 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent / ".env")
 
 # API - use MiniMax for all calls
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+OPENAI_BASE_URL = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")
+
 MINIMAX_API_KEY = os.environ.get("MINIMAX_API_KEY", "")
 if not MINIMAX_API_KEY:
     raise ValueError("MINIMAX_API_KEY not set in environment or .env file")
 
 MINIMAX_BASE_URL = os.environ.get("MINIMAX_BASE_URL", "https://api.minimax.io/v1")
 MINIMAX_MODEL = os.environ.get("MINIMAX_MODEL", "MiniMax-M2.5")
+
+PRIMARY_MODEL = os.getenv("PRIMARY_MODEL", "openai-codex/gpt-5.3-codex")
+FALLBACK_MODEL = os.getenv("FALLBACK_MODEL", "minimax/minimax-m2.5")
+FALLBACK_ON_RATE_LIMIT = os.getenv("FALLBACK_ON_RATE_LIMIT", "true").lower() == "true"
 
 # Use MiniMax for all agents
 PLANNER_MODEL = os.environ.get("PLANNER_MODEL", "MiniMax-M2.5")
