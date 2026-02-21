@@ -21,6 +21,8 @@ All steps 0.1–0.8 done. Reports at /root/.openclaw/workspace/reports/vps-phase
 ## Phase 3: Orphaned Processes — IN PROGRESS
 - Step 3.1 ✅ Process management mapped: multiprocessing.Process workers tracked in main loop by pid->(worker_id,proc)
 - Step 3.2 ✅ Cleanup implemented: PID tracking set, SIGTERM/SIGINT handlers, SIGTERM→10s wait→SIGKILL, normal-exit cleanup, completion PID removal + cleanup logs
+- Step 3.3 ✅ Created systemd unit template: /home/gary/agentswarm/agentswarm.service
+- Step 3.4 🔄 Shutdown under load test started: SIGTERM during 15-task run triggers cleanup logs; no lingering worker/main processes found after exit
 ## Phase 4: Model Configuration — NOT STARTED
 ## Phase 5: Strip Secrets — NOT STARTED
 ## Phase 6: Documentation — NOT STARTED

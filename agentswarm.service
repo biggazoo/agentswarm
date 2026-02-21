@@ -1,0 +1,16 @@
+[Unit]
+Description=AgentSwarm Worker Orchestrator
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/gary/agentswarm
+ExecStart=/usr/bin/python3 main.py
+KillMode=mixed
+TimeoutStopSec=15
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
