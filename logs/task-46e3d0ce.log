@@ -1,3 +1,0 @@
-[2026-02-19T22:30:55.690388] started: Task: Implement custom exceptions
-[2026-02-19T22:31:12.839294] done: ```json
-{"files": [{"path": "dictionary_cli/exceptions.py", "content": "\"\"\"Custom exceptions for the dictionary CLI application.\"\"\"\n\n\nclass WordNotFoundError(Exception):\n    \"\"\"Raised when a word is not found in the dictionary API.\"\"\"\n    \n    def __init__(self, word: str):\n        self.word = word\n        super().__init__(f\"Word '{word}' not found in dictionary\")\n\n\nclass NetworkError(Exception):\n    \"\"\"Raised when there is a network connection error.\"\"\"\n    \n  

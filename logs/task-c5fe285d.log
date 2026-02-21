@@ -1,6 +1,0 @@
-[2026-02-19T22:06:07.568237] started: Task: Integrate CLI with API and formatter
-[2026-02-19T22:06:13.600469] done: [TOOL_CALL]
-{tool => "filesystem_list_allowed_directories", args => {
-
-}}
-[/TOOL_CALL]

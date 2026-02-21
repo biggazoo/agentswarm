@@ -1,7 +1,0 @@
-[2026-02-19T22:12:20.282053] started: Task: Implement API client
-[2026-02-19T22:12:35.868970] done: ```json
-{
-  "files": [
-    {
-      "path": "word_definer/api.py",
-      "content": "\"\"\"API client for Free Dictionary API.\"\"\"\n\nimport requests\n\n\nclass WordNotFoundError(Exception):\n    \"\"\"Raised when the word is not found in the dictionary.\"\"\"\n    pass\n\n\nclass NetworkError(Exception):\n    \"\"\"Raised when there is a network connection error.\"\"\"\n    pass\n\n\ndef fetch_definition(word: str) -> list:\n    \"\"\"\n    Fetch definition(s) for a word from the Free Dictiona

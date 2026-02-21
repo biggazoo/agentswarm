@@ -1,2 +1,0 @@
-[2026-02-21T14:01:49.497452] started: Task: Create loadtest_1.txt through loadtest_3.txt
-[2026-02-21T14:01:59.714196] done: Created output directory with loadtest_1.txt, loadtest_2.txt, and loadtest_3.txt files

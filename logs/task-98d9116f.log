@@ -1,3 +1,0 @@
-[2026-02-19T22:12:35.874317] started: Task: Test CLI manually
-[2026-02-19T22:12:47.638622] done: ```json
-{"files": [{"path": "test_cli_manual.sh", "content": "#!/bin/bash\n\necho \"=== Test 1: Valid word 'hello' ===\"\npython -m word_definer hello\necho \"Exit code: $?\"\necho \"\"\n\necho \"=== Test 2: Invalid word 'xyzqwerty' ===\"\npython -m word_definer xyzqwerty\necho \"Exit code: $?\"\necho \"\"\n\necho \"=== Test 3: No argument ===\"\npython -m word_definer\necho \"Exit code: $?\"\necho \"\"\n\necho \"=== Test 4: Help flag ===\"\npython -m word_definer --help\necho \"Exit code: $?\"\

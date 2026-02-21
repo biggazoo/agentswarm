@@ -1,3 +1,0 @@
-[2026-02-19T21:52:25.978665] started: Task: Stop the active swarm
-[2026-02-19T21:52:33.791213] done: ```json
-{"files": [{"path": "stop_swarm.sh", "content": "#!/bin/bash\n# Script to stop the active Docker Swarm\n\necho \"Stopping Docker Swarm...\"\n\n# Check if Docker is running\nif ! command -v docker &> /dev/null; then\n    echo \"Error: Docker is not installed or not in PATH\"\n    exit 1\nfi\n\n# Check if Docker daemon is running\nif ! docker info &> /dev/null; then\n    echo \"Error: Docker daemon is not running\"\n    exit 1\nfi\n\n# Check if currently in a swarm\nif docker info 2>/dev/n

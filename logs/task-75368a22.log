@@ -1,7 +1,0 @@
-[2026-02-19T22:12:25.291447] started: Task: Handle word not found error
-[2026-02-19T22:12:57.738005] done: ```json
-{
-  "files": [
-    {
-      "path": "cli_dict/src/api.py",
-      "content": "import requests\n\n\nclass WordNotFoundError(Exception):\n    \"\"\"Custom exception for when a word is not found in the dictionary.\"\"\"\n    pass\n\n\ndef fetch_definition(word):\n    \"\"\"\n    Fetch the definition of a word from the Free Dictionary API.\n    \n    Args:\n        word: The word to look up\n        \n    Returns:\n        JSON response from the API\n        \n    Raises:\n        WordNotFound
