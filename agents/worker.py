@@ -240,7 +240,7 @@ class WorkerAgent:
             subprocess.run(["git", "checkout", "main"], cwd=self.workspace, capture_output=True)
             
             merge_result = subprocess.run(
-                ["git", "merge", "--no-ff", branch_name],
+                ["git", "merge", "--no-ff", "-X", "theirs", branch_name],
                 cwd=self.workspace,
                 capture_output=True,
                 text=True
@@ -385,6 +385,7 @@ Only create files relevant to your task."""
             
             if merged:
                 print(f"[{self.worker_id}] ✅ Completed: {title}")
+                print(f"[{self.worker_id}] Calling package_output()...")
                 archive_path = self.package_output(task_id, written)
                 queue.log_event(self.worker_id, task_id, "done", result.get('summary', ''))
                 return {"status": "success", "files": written, "summary": result.get('summary', ''), "archive": archive_path}

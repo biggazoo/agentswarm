@@ -4,7 +4,9 @@ AgentSwarm Lite - Main Orchestrator Entry Point
 """
 import argparse
 import io
+import json
 import os
+import sqlite3
 import sys
 import tarfile
 import time
@@ -70,9 +72,32 @@ def start_dashboard():
     return proc
 
 
+def get_run_written_files() -> set[str]:
+    """Collect unique file paths written by successful tasks in the current run DB."""
+    written_files = set()
+
+    conn = sqlite3.connect(config.DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT result FROM tasks WHERE status = 'done' AND result IS NOT NULL")
+    rows = cursor.fetchall()
+    conn.close()
+
+    for (result_text,) in rows:
+        try:
+            payload = json.loads(result_text)
+            for rel_path in payload.get("files", []):
+                if rel_path:
+                    written_files.add(rel_path)
+        except Exception:
+            continue
+
+    return written_files
+
+
 def package_final_delivery(project_name: str, run_id: str, start_time: float,
-                           end_time: float, stats: dict, total_workers: int) -> str:
-    """Package the entire workspace as the final project delivery archive."""
+                           end_time: float, stats: dict, total_workers: int,
+                           run_written_files: set[str]) -> str:
+    """Package run outputs as the final project delivery archive."""
     workspace = Path(config.WORKSPACE_DIR)
     outputs_dir = Path(config.OUTPUTS_DIR)
     outputs_dir.mkdir(parents=True, exist_ok=True)
@@ -98,6 +123,24 @@ def package_final_delivery(project_name: str, run_id: str, start_time: float,
         f"duration_seconds: {duration}\n"
     )
 
+    excluded_dirs = {".git", "__pycache__"}
+    required_files = {"SPEC.md", "FEATURES.json"}
+    allowed_files = set(required_files) | set(run_written_files)
+
+    def should_include(path: Path) -> bool:
+        rel = path.relative_to(workspace)
+        rel_str = str(rel)
+        if any(part in excluded_dirs for part in rel.parts):
+            return False
+        if path.suffix == ".pyc":
+            return False
+        return rel_str in allowed_files
+
+    included_files = []
+    for p in sorted(workspace.rglob("*")):
+        if p.is_file() and should_include(p):
+            included_files.append(p)
+
     with tarfile.open(archive_path, "w:gz") as tar:
         # Embed manifest.txt at archive root
         manifest_bytes = manifest.encode()
@@ -105,10 +148,8 @@ def package_final_delivery(project_name: str, run_id: str, start_time: float,
         info.size = len(manifest_bytes)
         tar.addfile(info, io.BytesIO(manifest_bytes))
 
-        # Add all workspace files (skip .git internals)
-        for p in sorted(workspace.rglob("*")):
-            if p.is_file() and ".git" not in p.parts:
-                tar.add(p, arcname=str(p.relative_to(workspace)))
+        for p in included_files:
+            tar.add(p, arcname=str(p.relative_to(workspace)))
 
     size_mb = archive_path.stat().st_size / (1024 * 1024)
     print(f"PROJECT COMPLETE — output: {archive_path} ({size_mb:.2f}MB)")
@@ -156,7 +197,8 @@ def main():
         sys.exit(1)
     
     stats = queue.get_stats()
-    print(f"✅ {stats['total']} tasks created\n")
+    planned_task_count = stats['total']
+    print(f"✅ {planned_task_count} tasks created\n")
     
     # Start dashboard
     print("📊 Starting dashboard...")
@@ -213,6 +255,10 @@ def main():
     except KeyboardInterrupt:
         print("\n⚠️ Interrupted")
     
+    # Snapshot execution stats/files before reconciler mutates queue
+    execution_stats = queue.get_stats()
+    run_written_files = get_run_written_files()
+
     # Final reconciler run
     print("\n" + "="*50)
     print("FINAL: Reconciliation")
@@ -223,26 +269,29 @@ def main():
     # Stop reconciler
     reconciler.stop()
     
-    # Final stats
-    stats = queue.get_stats()
     elapsed = int(time.time() - start_time)
-    
+    manifest_stats = {
+        'done': execution_stats['done'],
+        'failed': execution_stats['failed'],
+        'total': planned_task_count
+    }
+
     print("\n" + "="*50)
     print("COMPLETE")
     print("="*50)
     print(f"Runtime: {elapsed}s")
-    print(f"Tasks: {stats['done']} done, {stats['failed']} failed, {stats['total']} total")
+    print(f"Tasks: {manifest_stats['done']} done, {manifest_stats['failed']} failed, {manifest_stats['total']} total")
     print("="*50 + "\n")
     
     # Package final delivery archive
     end_time = time.time()
-    package_final_delivery(project_name, run_id, start_time, end_time, stats, total_workers_spawned)
+    package_final_delivery(project_name, run_id, start_time, end_time, manifest_stats, total_workers_spawned, run_written_files)
 
     # Stop dashboard
     dashboard_proc.terminate()
 
-    if stats['failed'] > 0:
-        print(f"⚠️ {stats['failed']} tasks failed")
+    if manifest_stats['failed'] > 0:
+        print(f"⚠️ {manifest_stats['failed']} tasks failed")
         return 1
 
     print("✅ AgentSwarm Lite complete!")
