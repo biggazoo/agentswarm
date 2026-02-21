@@ -6,6 +6,7 @@ import argparse
 import io
 import json
 import os
+import signal
 import sqlite3
 import sys
 import tarfile
@@ -95,6 +96,79 @@ def start_dashboard():
         stderr=subprocess.PIPE
     )
     return proc
+
+
+def cleanup_worker_processes(running_workers: dict, tracked_pids: set[int]):
+    """Terminate all tracked worker processes: SIGTERM, wait, then SIGKILL survivors."""
+    target_pids = sorted(tracked_pids)
+
+    if not target_pids:
+        print("Cleanup: sent SIGTERM to 0 workers")
+        print("Cleanup: 0 workers terminated cleanly")
+        return
+
+    print(f"Cleanup: sent SIGTERM to {len(target_pids)} workers")
+    for pid in target_pids:
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except ProcessLookupError:
+            pass
+        except Exception:
+            pass
+
+    deadline = time.time() + 10
+    while time.time() < deadline:
+        survivors = []
+        for pid in list(tracked_pids):
+            proc_tuple = running_workers.get(pid)
+            proc = proc_tuple[1] if proc_tuple else None
+            alive = False
+            if proc is not None:
+                alive = proc.is_alive()
+            else:
+                try:
+                    os.kill(pid, 0)
+                    alive = True
+                except ProcessLookupError:
+                    alive = False
+                except Exception:
+                    alive = False
+
+            if alive:
+                survivors.append(pid)
+            else:
+                tracked_pids.discard(pid)
+                if pid in running_workers:
+                    running_workers[pid][1].join(timeout=0.1)
+                    del running_workers[pid]
+
+        if not survivors:
+            break
+        time.sleep(0.2)
+
+    survivors = []
+    for pid in list(tracked_pids):
+        proc_tuple = running_workers.get(pid)
+        proc = proc_tuple[1] if proc_tuple else None
+        alive = proc.is_alive() if proc is not None else False
+        if alive:
+            survivors.append(pid)
+
+    for pid in survivors:
+        try:
+            os.kill(pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        except Exception:
+            pass
+
+    for pid in list(tracked_pids):
+        if pid in running_workers:
+            running_workers[pid][1].join(timeout=0.2)
+            del running_workers[pid]
+        tracked_pids.discard(pid)
+
+    print(f"Cleanup: {len(target_pids) - len(survivors)} workers terminated cleanly")
 
 
 def get_run_written_files() -> set[str]:
@@ -241,12 +315,26 @@ def main():
     print("="*50 + "\n")
     
     running_workers = {}
+    tracked_worker_pids: set[int] = set()
     total_workers_spawned = 0
     worker_sequence = 1
     start_time = time.time()
-    
+    stop_requested = False
+
+    def handle_shutdown(signum, _frame):
+        nonlocal stop_requested
+        stop_requested = True
+        sig_name = signal.Signals(signum).name
+        print(f"\n⚠️ Received {sig_name}, shutting down workers...")
+
+    signal.signal(signal.SIGTERM, handle_shutdown)
+    signal.signal(signal.SIGINT, handle_shutdown)
+
     try:
         while True:
+            if stop_requested:
+                break
+
             stats = queue.get_stats()
             
             # Check if done
@@ -265,6 +353,7 @@ def main():
                     worker_sequence += 1
                     proc = spawn_worker(worker_id)
                     running_workers[proc.pid] = (worker_id, proc)
+                    tracked_worker_pids.add(proc.pid)
                     total_workers_spawned += 1
                     print(f"🚀 Spawned {worker_id}")
             elif slots > 0 and ready_count > 0 and not can_spawn:
@@ -277,6 +366,11 @@ def main():
                     finished.append(pid)
             
             for pid in finished:
+                worker_id, proc = running_workers[pid]
+                proc.join(timeout=0.2)
+                is_dead = not proc.is_alive()
+                if is_dead:
+                    tracked_worker_pids.discard(pid)
                 del running_workers[pid]
             
             # Print status
@@ -284,9 +378,8 @@ def main():
             print(f"⏱️ {elapsed}s | Workers: {len(running_workers)} | Done: {stats['done']} | Pending: {stats['pending']}")
             
             time.sleep(5)
-    
-    except KeyboardInterrupt:
-        print("\n⚠️ Interrupted")
+    finally:
+        cleanup_worker_processes(running_workers, tracked_worker_pids)
     
     # Snapshot execution stats/files before reconciler mutates queue
     execution_stats = queue.get_stats()

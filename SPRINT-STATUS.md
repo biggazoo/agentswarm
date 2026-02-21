@@ -19,6 +19,8 @@ All steps 0.1–0.8 done. Reports at /root/.openclaw/workspace/reports/vps-phase
 - Step 2.6 ✅ Load test run #1 passed stability criteria (0 failures; planner created 16 tasks incl. verify)
 - Step 2.7 ✅ Stability runs #2 and #3 passed (0 failures, no premature exits)
 ## Phase 3: Orphaned Processes — IN PROGRESS
+- Step 3.1 ✅ Process management mapped: multiprocessing.Process workers tracked in main loop by pid->(worker_id,proc)
+- Step 3.2 ✅ Cleanup implemented: PID tracking set, SIGTERM/SIGINT handlers, SIGTERM→10s wait→SIGKILL, normal-exit cleanup, completion PID removal + cleanup logs
 ## Phase 4: Model Configuration — NOT STARTED
 ## Phase 5: Strip Secrets — NOT STARTED
 ## Phase 6: Documentation — NOT STARTED
