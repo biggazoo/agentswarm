@@ -17,3 +17,15 @@ tmp/
 sandbox-*/
 *.pid
 workspace/
+# === Security: Never commit secrets ===
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*_secret*
+*_token*
+credentials.*
+secrets.*
